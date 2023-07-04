@@ -3,38 +3,47 @@ package main
 import (
 	"context"
 	"fmt"
+	db2 "learn-be/db"
 	"learn-be/db/lsm"
+	"math/rand"
 	"os"
 )
 
 func main() {
-	logFile := "data/data.log"
+	logDir := "data"
 
-	db := lsm.NewLSM(&lsm.Config{
-		FileOutPath: logFile,
+	var db db2.DB
+	db = lsm.NewLSM(&lsm.Config{
+		FileOutDir:      logDir,
+		SegmentMaxLines: 3,
 	})
 
-	_ = os.Remove(logFile)
+	_ = os.Remove(logDir)
 
-	err := db.Set(context.Background(), "key1", "value1")
+	for i := 0; i <= 10; i++ {
+		err := db.Set(context.Background(), "key1", rand.Intn(30))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	for i := 0; i <= 4; i++ {
+		err := db.Set(context.Background(), "key2", rand.Intn(30))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	value1, err := db.Get(context.Background(), "key1")
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.Set(context.Background(), "key2", "value2")
+	value2, err := db.Get(context.Background(), "key2")
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.Set(context.Background(), "key1", "value1-1")
-	if err != nil {
-		panic(err)
-	}
-
-	value, err := db.Get(context.Background(), "key1")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(value)
+	fmt.Println(value1)
+	fmt.Println(value2)
 }
